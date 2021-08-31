@@ -1,14 +1,14 @@
 const fs = require("fs");
-const bodyParser = require("body-parser");
 const jsonServer = require("json-server");
 const jwt = require("jsonwebtoken");
+const express = require("express")
 
 const server = jsonServer.create();
 const router = jsonServer.router("./database.json");
 const userdb = JSON.parse(fs.readFileSync("./users.json", "UTF-8"));
 
-server.use(bodyParser.urlencoded({ extended: true }));
-server.use(bodyParser.json());
+server.use(express.urlencoded({ extended: true }));
+server.use(express.json());
 server.use(jsonServer.defaults());
 
 const SECRET_KEY = "123456789";
@@ -45,7 +45,7 @@ function isAuthenticatedByUserId({ userId, password }) {
 }
 
 // Register New User
-server.post("/auth/register", (req, res) => {
+server.post("/signup", (req, res) => {
   console.log("register endpoint called; request body:");
   console.log(req.body);
   const { email, userId, password } = req.body;
@@ -92,13 +92,13 @@ server.post("/auth/register", (req, res) => {
   });
 
   // Create token for new user
-  const access_token = createToken({ email, password });
-  console.log("Access Token:" + access_token);
-  res.status(200).json({ access_token });
+  const token = createToken({ email, password });
+  console.log("Access Token:" + token);
+  res.status(200).json({ token });
 });
 
 // Login to one of the users from ./users.json
-server.post("/auth/login", (req, res) => {
+server.post("/login", (req, res) => {
   console.log("login endpoint called; request body:");
   console.log(req.body);
   const { email, userId, password } = req.body;
@@ -111,15 +111,14 @@ server.post("/auth/login", (req, res) => {
     res.status(status).json({ status, message });
     return;
   }
-  const access_token = createToken({ email, password });
-  console.log("Access Token:" + access_token);
-  res.status(200).json({ access_token });
+  const token = createToken({ email, password });
+  console.log("Access Token:" + token);
+  res.status(200).json({ token });
 });
 
 server.use(/^(?!\/auth).*$/, (req, res, next) => {
   if (
-    req.headers.authorization === undefined ||
-    req.headers.authorization.split(" ")[0] !== "Bearer"
+    req.headers.token === undefined
   ) {
     const status = 401;
     const message = "Error in authorization format";
@@ -128,7 +127,7 @@ server.use(/^(?!\/auth).*$/, (req, res, next) => {
   }
   try {
     let verifyTokenResult;
-    verifyTokenResult = verifyToken(req.headers.authorization.split(" ")[1]);
+    verifyTokenResult = verifyToken(req.headers.token);
 
     if (verifyTokenResult instanceof Error) {
       const status = 401;

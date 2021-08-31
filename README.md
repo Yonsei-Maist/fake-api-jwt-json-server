@@ -37,7 +37,7 @@ You should receive an access token with the following format
 
 ```
 {
-   "access_token": "<ACCESS_TOKEN>"
+   "token": "<ACCESS_TOKEN>"
 }
 ```
 
@@ -45,7 +45,7 @@ You should receive an access token with the following format
 You should send this authorization with any request to the protected endpoints
 
 ```
-Authorization: Bearer <ACCESS_TOKEN>
+token: <ACCESS_TOKEN>
 ```
 
 Check out these tutorials:
